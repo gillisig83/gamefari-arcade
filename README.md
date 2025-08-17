@@ -1,36 +1,27 @@
 # Gamefari Arcade
-A lightweight browser game platform with scoring, per‑game leaderboards, responsive design, ads, and **optional global leaderboards via Supabase**.
+A lightweight browser game platform with scoring, per‑game leaderboards, responsive design, and AdSense slots.
 
-## Quick Start (local)
+## 1) Local run
 ```bash
-npx http-server public -p 8080
+npm i -g http-server # if you don't already have a static server
+http-server public -p 8080
 # open http://localhost:8080
 ```
 
-## Deploy Options
-### A) GitHub Pages (included workflow)
-1. Create a GitHub repo and push this project.
-2. Go to *Settings → Pages* and set **Branch: `gh-pages`** (the workflow publishes there).
-3. The site will deploy automatically on every push to `main`.
-
-### B) Vercel
+## 2) Deploy to Vercel
 ```bash
 npm i -g vercel
-vercel
-vercel --prod
+vercel  # answers: project root -> current folder; build -> none (static)
 ```
+Vercel uses `vercel.json` in this repo for headers and caching.
 
-## Enable Google Ads
-- In `public/index.html`, replace `ca-pub-XXXXXXXXXXXXXXXX` and ad slot IDs.
-- In `public/ads.txt`, add your AdSense publisher line.
-- Make sure your domain is approved and policies are followed.
+## 3) Enable Google Ads
+- In `public/index.html`, replace `ca-pub-XXXXXXXXXXXXXXXX` and set your `data-ad-slot` values.
+- In `public/ads.txt`, add your AdSense publisher line (see example).
+- Ensure your domain is approved and follows AdSense policies.
 
-## Global Leaderboards (Supabase)
-1. Copy `public/js/config.example.js` to `public/js/config.js` and fill `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
-2. Create a `scores` table (see comments in `public/js/supabase-client.js`) and enable RLS with safe policies.
-3. The frontend will automatically switch from *local* to *global (Supabase)* mode.
+## 4) Persist leaderboards online (optional)
+Replace the localStorage functions in `public/js/app.js` with your API calls (Supabase/Firebase/etc.). Keep basic validation + rate limiting on the server side.
 
-**Security note**: Anon keys are public by design. Use RLS policies to prevent abuse and consider rate limits (e.g., Supabase edge functions) for production.
-
-## GitHub Pages Workflow & Static Build
-- Source: `/public` is deployed as-is. No Node build step required.
+## 5) Add more games
+Duplicate the game card in `index.html` and add a new JS file under `public/js/your-game.js`. Register in `state.games` inside `app.js` and implement a class with the same interface as `AstroDodge` (`start()`, `destroy()`, `togglePause()`, `nudge(dir)`).
