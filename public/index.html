@@ -4,9 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Gamefari Arcade • Browser Games, Leaderboards & Ads</title>
+  <meta name="description" content="A lightweight browser game platform with scoring, per‑game leaderboards, responsive design, and Google Ads slots.">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="stylesheet" href="/css/styles.css" />
+  <!-- Google AdSense (replace publisher ID) -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -23,34 +25,112 @@
       </div>
     </div>
   </header>
+
   <main class="wrap">
+    <!-- Top Ad Slot -->
+    <section class="ad">
+      <ins class="adsbygoogle" style="display:block"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="0000000001"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <div class="ad-frame">Ad slot (replace IDs to enable)</div>
+      <script>try{(window.adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}</script>
+    </section>
+
+    <!-- Game Library -->
     <section id="library" class="grid cols-3" aria-label="Game Library">
-      <article class="card" data-game="astro-dodge">
-        <h3>Astro Dodge</h3>
-        <button class="btn play" data-game="astro-dodge">Play</button>
+      <article class="card" data-game="astro-dodge" tabindex="0" role="button" aria-pressed="false">
+        <div class="game-thumb">
+          <span class="badge">New</span>
+          <svg viewBox="0 0 200 112" preserveAspectRatio="none" style="position:absolute;inset:0;opacity:.7">
+            <defs><radialGradient id="g" cx="50%" cy="20%"><stop offset="0" stop-color="#58c4ff"/><stop offset="1" stop-color="#0a1224"/></radialGradient></defs>
+            <rect width="100%" height="100%" fill="url(#g)"/>
+            <g fill="#bfe7ff">
+              <circle cx="14" cy="18" r="1"/><circle cx="180" cy="20" r="1"/><circle cx="120" cy="12" r="1"/>
+              <circle cx="40" cy="80" r="1"/><circle cx="95" cy="55" r="1"/><circle cx="150" cy="88" r="1"/>
+            </g>
+          </svg>
+        </div>
+        <h3 style="margin:12px 0 6px">Astro Dodge</h3>
+        <p class="muted" style="margin:0 0 12px">Dodge meteors, last as long as you can. Keyboard & touch supported.</p>
+        <div class="row">
+          <button class="btn play" data-game="astro-dodge">Play</button>
+          <button class="btn ghost scores" data-game="astro-dodge">View Scores</button>
+        </div>
       </article>
     </section>
+
+    <!-- Active Game Area -->
     <section id="game-area" hidden>
-      <canvas id="game-canvas" width="960" height="540"></canvas>
-      <div class="hud">
-        <div>Score: <span id="score">0</span></div>
-        <div>Best: <span id="best">0</span></div>
+      <div class="row" style="margin-bottom:8px">
+        <div class="controls" aria-label="Game controls">
+          <span class="kbd">←</span><span class="kbd">→</span>
+          <span class="muted">or</span>
+          <span class="kbd">A</span><span class="kbd">D</span>
+          <span class="muted">·</span>
+          <span class="kbd">P</span> <span class="muted">pause</span>
+        </div>
+        <div class="row">
+          <button class="btn" id="pause-btn">Pause</button>
+          <button class="btn danger" id="quit-btn">Quit</button>
+        </div>
+      </div>
+      <div class="game-shell">
+        <div class="viewport">
+          <canvas id="game-canvas" width="960" height="540" aria-label="Game canvas"></canvas>
+          <div class="hud"><div id="hud-left">Score: <span id="score">0</span></div><div id="hud-right">Best: <span id="best">0</span></div></div>
+        </div>
+        <div class="mobile-pad">
+          <button class="pad-btn" id="left-pad">◄</button>
+          <button class="pad-btn" id="right-pad">►</button>
+        </div>
       </div>
     </section>
-    <section id="leaderboards" hidden>
-      <h2>Leaderboards</h2>
+
+    <!-- Leaderboard -->
+    <section id="leaderboards" class="leaderboard" aria-live="polite">
+      <h2 style="margin:12px 0">Leaderboards</h2>
+      <p class="muted" id="lb-sub">Top scores per game (<span id="lb-mode">local</span>). Configure Supabase for global boards.</p>
       <div id="lb-tables"></div>
     </section>
+
+    <!-- Bottom Ad Slot -->
+    <section class="ad">
+      <ins class="adsbygoogle" style="display:block"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="0000000002"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <div class="ad-frame">Ad slot (replace IDs to enable)</div>
+      <script>try{(window.adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}</script>
+    </section>
   </main>
+
   <footer>
-    <p>© <span id="year"></span> Gamefari Arcade</p>
+    <div class="wrap row" style="justify-content: space-between; align-items: flex-start; gap: 16px;">
+      <p class="muted">© <span id="year">2025</span> Gamefari Arcade.</p>
+      <button class="btn ghost" id="export-btn" title="Download your leaderboard as JSON">Export scores</button>
+    </div>
   </footer>
+
   <dialog id="score-modal">
-    <input id="player-name" type="text" placeholder="Your name" maxlength="20" />
-    <button id="save-score">Save</button>
-    <button id="skip-score">Skip</button>
+    <div class="modal-header">Submit your score</div>
+    <div class="modal-body">
+      <div class="muted" style="margin-bottom:8px">Nice run! Enter a name to record your score.</div>
+      <input id="player-name" type="text" placeholder="Your name" maxlength="20" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="skip-score">Skip</button>
+      <button class="btn" id="save-score">Save</button>
+    </div>
   </dialog>
-  <script src="/js/astro-dodge.js"></script>
-  <script src="/js/app.js"></script>
+
+  <!-- Optional Supabase config (leave as-is to keep local leaderboards) -->
+  <script src="/js/config.example.js"></script>
+  <script src="/js/supabase-client.js"></script>
+
+  <script src="/js/astro-dodge.js" defer></script>
+  <script src="/js/app.js" defer></script>
 </body>
 </html>
