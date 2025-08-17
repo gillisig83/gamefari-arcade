@@ -1,1 +1,3 @@
+# Replace with your AdSense publisher ID line exactly
+# Example (uncomment and replace Xs):
 # google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
