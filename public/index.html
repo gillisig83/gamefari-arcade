@@ -8,6 +8,7 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="stylesheet" href="/css/styles.css" />
+
   <!-- Google AdSense (replace publisher ID) -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
 </head>
@@ -41,22 +42,32 @@
     <!-- Game Library -->
     <section id="library" class="grid cols-3" aria-label="Game Library">
       <article class="card" data-game="astro-dodge" tabindex="0" role="button" aria-pressed="false">
-        <div class="game-thumb">
-          <span class="badge">New</span>
-          <svg viewBox="0 0 200 112" preserveAspectRatio="none" style="position:absolute;inset:0;opacity:.7">
-            <defs><radialGradient id="g" cx="50%" cy="20%"><stop offset="0" stop-color="#58c4ff"/><stop offset="1" stop-color="#0a1224"/></radialGradient></defs>
-            <rect width="100%" height="100%" fill="url(#g)"/>
-            <g fill="#bfe7ff">
-              <circle cx="14" cy="18" r="1"/><circle cx="180" cy="20" r="1"/><circle cx="120" cy="12" r="1"/>
-              <circle cx="40" cy="80" r="1"/><circle cx="95" cy="55" r="1"/><circle cx="150" cy="88" r="1"/>
-            </g>
-          </svg>
-        </div>
+        <div class="game-thumb"><span class="badge">Updated</span></div>
         <h3 style="margin:12px 0 6px">Astro Dodge</h3>
-        <p class="muted" style="margin:0 0 12px">Dodge meteors, last as long as you can. Keyboard & touch supported.</p>
+        <p class="muted" style="margin:0 0 12px">Dodge meteors, survive as long as you can.</p>
         <div class="row">
           <button class="btn play" data-game="astro-dodge">Play</button>
           <button class="btn ghost scores" data-game="astro-dodge">View Scores</button>
+        </div>
+      </article>
+
+      <article class="card" data-game="breakout" tabindex="0" role="button" aria-pressed="false">
+        <div class="game-thumb"><span class="badge">New</span></div>
+        <h3 style="margin:12px 0 6px">Neon Breakout</h3>
+        <p class="muted" style="margin:0 0 12px">Classic bricks, smooth paddle feel, combo scoring.</p>
+        <div class="row">
+          <button class="btn play" data-game="breakout">Play</button>
+          <button class="btn ghost scores" data-game="breakout">View Scores</button>
+        </div>
+      </article>
+
+      <article class="card" data-game="flappy" tabindex="0" role="button" aria-pressed="false">
+        <div class="game-thumb"><span class="badge">New</span></div>
+        <h3 style="margin:12px 0 6px">Flappy Comet</h3>
+        <p class="muted" style="margin:0 0 12px">Tap/Space to glide through gates. Mobile‑friendly.</p>
+        <div class="row">
+          <button class="btn play" data-game="flappy">Play</button>
+          <button class="btn ghost scores" data-game="flappy">View Scores</button>
         </div>
       </article>
     </section>
@@ -70,6 +81,8 @@
           <span class="kbd">A</span><span class="kbd">D</span>
           <span class="muted">·</span>
           <span class="kbd">P</span> <span class="muted">pause</span>
+          <span class="muted">·</span>
+          <span class="kbd">Space/Click</span> <span class="muted">Flappy jump</span>
         </div>
         <div class="row">
           <button class="btn" id="pause-btn">Pause</button>
@@ -91,7 +104,7 @@
     <!-- Leaderboard -->
     <section id="leaderboards" class="leaderboard" aria-live="polite">
       <h2 style="margin:12px 0">Leaderboards</h2>
-      <p class="muted" id="lb-sub">Top scores per game (<span id="lb-mode">local</span>). Configure Supabase for global boards.</p>
+      <p class="muted" id="lb-sub">Top scores per game on this device. Configure persistence to use a backend.</p>
       <div id="lb-tables"></div>
     </section>
 
@@ -109,7 +122,7 @@
 
   <footer>
     <div class="wrap row" style="justify-content: space-between; align-items: flex-start; gap: 16px;">
-      <p class="muted">© <span id="year">2025</span> Gamefari Arcade.</p>
+      <p class="muted">© <span id="year"></span> Gamefari Arcade. Built as a static demo: responsive layout, scoring, per‑game leaderboards, and AdSense slots.</p>
       <button class="btn ghost" id="export-btn" title="Download your leaderboard as JSON">Export scores</button>
     </div>
   </footer>
@@ -126,11 +139,9 @@
     </div>
   </dialog>
 
-  <!-- Optional Supabase config (leave as-is to keep local leaderboards) -->
-  <script src="/js/config.example.js"></script>
-  <script src="/js/supabase-client.js"></script>
-
   <script src="/js/astro-dodge.js" defer></script>
+  <script src="/js/breakout.js" defer></script>
+  <script src="/js/flappy.js" defer></script>
   <script src="/js/app.js" defer></script>
 </body>
 </html>
