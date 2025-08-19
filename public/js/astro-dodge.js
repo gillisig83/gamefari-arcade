@@ -1,67 +1,53 @@
-// Fixes: crisp scaling, proper pause/resume text, consistent RAF cancel, input precedence bug
-function rand(a,b){ return Math.random()*(b-a)+a; }
-
-class AstroDodge {
-  constructor(canvas, onGameOver, onTick) {
-    this.c = canvas; this.x = canvas.width/2; this.y = canvas.height - 80;
-    this.vx = 0; this.speed = 7; this.paused = false; this.dead = false;
-    this.onGameOver = onGameOver; this.onTick = onTick;
-    this.stars = Array.from({length:140},()=>({x:rand(0,canvas.width), y:rand(0,canvas.height), s:rand(0.5,1.8)}));
-    this.meteors = []; this.spawnT = 0; this.score = 0; this.lastT = performance.now();
-    this.keyL=false; this.keyR=false; this._raf = 0;
-    this.handleKey = (e) => {
-      const down = e.type === 'keydown';
-      if (e.key==='ArrowLeft' || e.key==='a' || e.key==='A') { this.keyL = down; }
-      if (e.key==='ArrowRight'|| e.key==='d' || e.key==='D') { this.keyR = down; }
-      if (down && (e.key==='p' || e.key==='P')) this.togglePause();
-      if (down && (e.key===' ')) this.boost?.(); // for flappy muscle memory noop
-    };
-    window.addEventListener('keydown', this.handleKey);
-    window.addEventListener('keyup', this.handleKey);
-    this.blurH = () => { if (!this.paused) this.togglePause(true); };
-    window.addEventListener('blur', this.blurH);
+class NeonBreakout {
+  constructor(canvas, onGameOver, onTick){
+    this.c=canvas; this.g=canvas.getContext('2d'); this.onGameOver=onGameOver; this.onTick=onTick; this._raf=0; this.paused=false;
+    this.reset();
+    this.keyL=false; this.keyR=false;
+    this.keyH=(e)=>{const d=e.type==='keydown'; if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A')this.keyL=d; if(e.key==='ArrowRight'||e.key==='d'||e.key==='D')this.keyR=d; if(d&&(e.key==='p'||e.key==='P'))this.togglePause();};
+    window.addEventListener('keydown',this.keyH); window.addEventListener('keyup',this.keyH);
   }
-  start(){ this.dead=false; this.loop(); }
-  destroy(){ cancelAnimationFrame(this._raf); window.removeEventListener('keydown', this.handleKey); window.removeEventListener('keyup', this.handleKey); window.removeEventListener('blur', this.blurH); }
-  togglePause(force){ this.paused = typeof force==='boolean' ? force : !this.paused; const btn=document.querySelector('#pause-btn'); if (btn) btn.textContent = this.paused ? 'Resume' : 'Pause'; if (!this.paused) this.loop(); }
-  nudge(dir){ this.vx = dir * this.speed; this.x = Math.min(Math.max(this.x + this.vx, 20), this.c.width-20); }
-  loop(){
-    if (this.dead || this.paused) return;
-    this._raf = requestAnimationFrame(()=>this.loop());
-    const now = performance.now();
-    const dt = Math.min(2, (now - this.lastT)/16.6667); this.lastT = now;
+  reset(){
+    const w=this.c.width,h=this.c.height;
+    this.px=w/2; this.pw=140; this.ps=12; this.ball={x:w/2,y:h*0.65,vx:6,vy:-6,r:9};
+    this.score=0; this.rows=5; this.cols=10; this.bricks=[]; const bw= (w-100)/this.cols, bh=22;
+    for(let r=0;r<this.rows;r++){for(let c=0;c<this.cols;c++){this.bricks.push({x:50+c*bw+2,y:60+r*(bh+8),w:bw-4,h:bh,hp:1});}}
+  }
+  start(){ this.loop(); }
+  destroy(){ cancelAnimationFrame(this._raf); window.removeEventListener('keydown',this.keyH); window.removeEventListener('keyup',this.keyH); }
+  togglePause(force){ this.paused= typeof force==='boolean'?force:!this.paused; const b=document.querySelector('#pause-btn'); if(b) b.textContent=this.paused?'Resume':'Pause'; if(!this.paused) this.loop(); }
+  nudge(dir){ this.px=Math.min(Math.max(this.px+dir*this.ps*3, this.pw/2+10, this.c.width-this.pw/2-10)); }
+  loop(){ if(this.paused) return; this._raf=requestAnimationFrame(()=>this.loop()); this.update(); this.draw(); }
+  update(){
+    const w=this.c.width,h=this.c.height; const padL=this.pw/2+10, padR=w-this.pw/2-10;
+    if(this.keyL) this.px=Math.max(padL, this.px- this.ps);
+    if(this.keyR) this.px=Math.min(padR, this.px+ this.ps);
 
-    this.vx = (this.keyL? -1 : 0) + (this.keyR? 1 : 0);
-    this.x = Math.min(Math.max(this.x + this.vx * this.speed * dt, 20), this.c.width-20);
+    const b=this.ball; b.x+=b.vx; b.y+=b.vy;
+    if(b.x<b.r||b.x>w-b.r) b.vx*=-1;
+    if(b.y<b.r) b.vy*=-1;
 
-    for (const s of this.stars) { s.y += s.s * 0.8 * dt; if (s.y>this.c.height) { s.y = 0; s.x = rand(0,this.c.width);} }
+    // paddle
+    if(b.y>h-60 && Math.abs(b.x-this.px)<this.pw/2){ b.vy=-Math.abs(b.vy); b.vx += (b.x-this.px)/25; this.score+=1; this.onTick?.(this.score); }
 
-    this.spawnT -= dt; if (this.spawnT <= 0) {
-      this.spawnT = Math.max(2, 30 - Math.min(28, Math.floor(this.score/140)));
-      this.meteors.push({ x: rand(20,this.c.width-20), y: -20, v: rand(2,6) + (this.score/420), r: rand(10,20) });
-      if (this.meteors.length>80) this.meteors.shift();
+    // bricks
+    for(const brick of this.bricks){ if(brick.hp<=0) continue; if(b.x>brick.x && b.x<brick.x+brick.w && b.y>brick.y && b.y<brick.y+brick.h){ brick.hp=0; this.score+=5; this.onTick?.(this.score); // basic reflect
+        if(Math.abs((brick.x+brick.w/2)-b.x) > Math.abs((brick.y+brick.h/2)-b.y)) b.vx*=-1; else b.vy*=-1; }
     }
-    for (const m of this.meteors) { m.y += m.v * dt * 3; }
 
-    this.score += dt; const shown = Math.floor(this.score);
-    this.onTick?.(shown);
+    // lose
+    if(b.y>h+40){ this.onGameOver?.(this.score); }
 
-    for (const m of this.meteors) { if (Math.hypot(m.x-this.x, m.y-this.y) < m.r + 14) { this.die(); return; } }
-
-    this.draw();
+    // win -> new level
+    if(this.bricks.every(bk=>bk.hp<=0)){ this.rows=Math.min(9,this.rows+1); this.reset(); this.score+=25; this.onTick?.(this.score); }
   }
   draw(){
-    const c=this.c, g=c.getContext('2d'); g.clearRect(0,0,c.width,c.height);
-    g.fillStyle = '#061021'; g.fillRect(0,0,c.width,c.height);
-    g.fillStyle = '#bfe7ff';
-    for (const s of this.stars) { g.globalAlpha = Math.min(Math.max(s.s/2, 0.2), 0.9); g.fillRect(s.x, s.y, 2, 2); }
-    g.globalAlpha = 1;
-    g.save(); g.translate(this.x, this.y);
-    g.fillStyle = '#58c4ff'; g.beginPath(); g.moveTo(0,-14); g.lineTo(12,10); g.lineTo(-12,10); g.closePath(); g.fill();
-    g.fillStyle = '#7affc6'; g.fillRect(-3,10,6,6);
-    g.restore();
-    for (const m of this.meteors) { g.fillStyle = '#b27b4b'; g.beginPath(); g.arc(m.x, m.y, m.r, 0, Math.PI*2); g.fill(); g.strokeStyle = '#723e1d'; g.lineWidth = 2; g.stroke(); }
-    const grad = g.createRadialGradient(this.x, this.y, 10, this.x, this.y, 90); grad.addColorStop(0,'rgba(120,220,255,.08)'); grad.addColorStop(1,'transparent'); g.fillStyle = grad; g.beginPath(); g.arc(this.x, this.y, 120, 0, Math.PI*2); g.fill();
+    const w=this.c.width,h=this.c.height,g=this.g; g.clearRect(0,0,w,h);
+    g.fillStyle='#061021'; g.fillRect(0,0,w,h);
+    // paddle
+    g.fillStyle='#58c4ff'; g.fillRect(this.px-this.pw/2,h-40,this.pw,14);
+    // ball
+    g.fillStyle='#7affc6'; g.beginPath(); g.arc(this.ball.x,this.ball.y,this.ball.r,0,Math.PI*2); g.fill();
+    // bricks
+    for(const bk of this.bricks){ if(bk.hp<=0) continue; g.fillStyle='#183055'; g.fillRect(bk.x,bk.y,bk.w,bk.h); g.strokeStyle='#58c4ff'; g.strokeRect(bk.x+0.5,bk.y+0.5,bk.w-1,bk.h-1); }
   }
-  die(){ this.dead = true; cancelAnimationFrame(this._raf); this.onTick?.(Math.floor(this.score)); this.onGameOver?.(Math.floor(this.score)); }
 }
